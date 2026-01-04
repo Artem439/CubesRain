@@ -25,7 +25,7 @@ public class CubesPool : MonoBehaviour
 
     private void ActionOnGet(GameObject cube)
     {
-        cube.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        //cube.GetComponent<Rigidbody>().velocity = Vector3.zero;
         cube.SetActive(true);
     }
 
@@ -39,11 +39,8 @@ public class CubesPool : MonoBehaviour
         _cubesPool.Get();
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void Release(Collider other)
     {
-        if (other.TryGetComponent<Cube>(out Cube cube) != true)
-            return;
-        
         _cubesPool.Release(other.gameObject);
     }
 }

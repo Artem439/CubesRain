@@ -1,26 +1,21 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-[RequireComponent(typeof(ColorChanger))]
 public class GroundChecker : MonoBehaviour
 {
+    private bool _landed = false;
     private Platform _currentPlatform;
     
-    private ColorChanger _colorChanger;
-
-    private void Awake()
+    public event Action FeelOnPlatform;
+    
+    private void Update(Collision collision)
     {
-        _colorChanger = GetComponent<ColorChanger>();
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.collider.TryGetComponent(out Platform platform) != true)
-            return;
-
-        if (_currentPlatform == platform)
-            return;
-
-        _currentPlatform = platform;
-        _colorChanger.Change();
+        if (collision.collider.TryGetComponent(out Platform platform))
+        {
+            FeelOnPlatform?.Invoke();
+            
+            _landed = true;
+            _currentPlatform = platform;
+        }
     }
 }
