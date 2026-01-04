@@ -1,37 +1,41 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class CubeSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject _cubePrefab;
-    [SerializeField] private float _maxPositionX;
-    [SerializeField] private float _minPositionX;
-    [SerializeField] private float _maxPositionZ;
-    [SerializeField] private float _minPositionZ;
-    [SerializeField] private float _spawnRangeY;
+    [SerializeField] private CubesPool _cubesPool;
+    [SerializeField] private float _spawnDelay;
+    [SerializeField] private List<Transform> _spawnPoints;
 
-    private void OnValidate()
+    private void Start()
     {
-        if (_maxPositionX <= _minPositionX)
-            _maxPositionX = _minPositionX + 1;
-        
-        if (_maxPositionZ <= _minPositionZ)
-            _maxPositionZ = _minPositionZ + 1;
-    }
-
-    public GameObject Spawn()
-    {
-        GameObject newCube = Instantiate(_cubePrefab);
-        
-        newCube.transform.position = GetRandomSpawnPosition();
-
-        return newCube;
+        StartCoroutine(SpawnRoutine());
     }
     
-    private Vector3 GetRandomSpawnPosition()
+    private IEnumerator SpawnRoutine()
     {
-        float x = Random.Range(_minPositionX, _maxPositionX);
-        float z = Random.Range(_minPositionZ, _maxPositionZ);
-        return new Vector3(x, _spawnRangeY, z);
+        WaitForSeconds delay = new WaitForSeconds(_spawnDelay);
+
+        while (enabled)
+        {
+            yield return delay;
+            
+            Vector3 spawnPosition = _spawnPoints[Random.Range(0, _spawnPoints.Count)].position;
+            
+            Cube cube = _cubesPool.Get();
+            
+            cube.Reset(spawnPosition);
+            
+            cube.Released += OnReleased;
+        }
+    }
+
+    private void OnReleased(Cube cube)
+    {
+        cube.Released -= OnReleased;
+        
+        _cubesPool.Release(cube);
     }
 }

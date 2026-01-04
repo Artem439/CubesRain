@@ -3,44 +3,46 @@ using UnityEngine.Pool;
 
 public class CubesPool : MonoBehaviour
 {
-    [SerializeField] private GameObject _cubePrefab;
-    [SerializeField] private CubeSpawner _cubeSpawner;
-    [SerializeField] private float _repeatRate;
-    [SerializeField] private int _poolCapacity;
-    [SerializeField] private int _poolMaxSize;
+    [SerializeField] private Cube _cubePrefab;
+    [SerializeField] private int _capacity;
+    [SerializeField] private int _maxSize;
     
-    private ObjectPool<GameObject> _cubesPool;
-
+    private ObjectPool<Cube> _cubesPool;
+    
     private void Awake()
     {
-        _cubesPool = new ObjectPool<GameObject>(
-            createFunc: () => _cubeSpawner.Spawn(),
-            actionOnGet: (obj) => ActionOnGet(obj),
-            actionOnRelease: (obj) => obj.SetActive(false),
+        _cubesPool = new ObjectPool<Cube>(
+            createFunc: () => CreateObject(),
+            actionOnGet: (obj) => OnGetObject(obj),
+            actionOnRelease: (obj) => OnReleaseObject(obj),
             actionOnDestroy: (obj) => Destroy(obj),
             collectionCheck: true,
-            defaultCapacity: _poolCapacity,
-            maxSize: _poolMaxSize);
+            defaultCapacity: _capacity,
+            maxSize: _maxSize);
+    }
+    
+    public Cube Get()
+    {
+        return _cubesPool.Get();
     }
 
-    private void ActionOnGet(GameObject cube)
+    public void Release(Cube cube)
     {
-        //cube.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        cube.SetActive(true);
+        _cubesPool.Release(cube);
     }
 
-    private void Start()
+    private Cube CreateObject()
     {
-        InvokeRepeating(nameof(GetCube), 0.0f, _repeatRate);
+        return Instantiate(_cubePrefab);
     }
 
-    private void GetCube()
+    private void OnGetObject(Cube cube)
     {
-        _cubesPool.Get();
+        cube.gameObject.SetActive(true);
     }
-
-    public void Release(Collider other)
+    
+    private void OnReleaseObject(Cube cube)
     {
-        _cubesPool.Release(other.gameObject);
+        cube.gameObject.SetActive(false);
     }
 }
